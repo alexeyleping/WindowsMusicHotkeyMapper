@@ -18,7 +18,23 @@ This application allows you to use any keys on your keyboard to control the medi
 
 ## Installation
 
-### 1. Installing Rust
+### Option 1: Download Pre-built Binaries (Recommended)
+
+Download the latest release from the [Releases page](https://github.com/yourusername/WindowsMusicHotkeyMapper/releases):
+
+**Windows:**
+- Download `windows_music_hotkey_mapper.msi` (MSI installer)
+- Or download `windows_music_hotkey_mapper.exe` (standalone executable)
+- Run the installer or place the executable in a convenient location
+
+**Linux:**
+- Download `windows_music_hotkey_mapper` (executable)
+- Make it executable: `chmod +x windows_music_hotkey_mapper`
+- Install playerctl: `sudo apt install playerctl`
+
+### Option 2: Build from Source
+
+#### 1. Installing Rust
 
 If Rust is not already installed:
 
@@ -29,9 +45,9 @@ source $HOME/.cargo/env
 ```
 
 **Windows:**
-Download and install from [rustup.rs ](https://rustup.rs /)
+Download and install from [rustup.rs](https://rustup.rs/)
 
-### 2. Installing dependencies
+#### 2. Installing dependencies
 
 **Linux/Ubuntu:**
 ```bash
@@ -45,12 +61,27 @@ sudo apt install libx11-dev libxdo-dev
 **Windows:**
 No additional dependencies are required.
 
-### 3. Building the project
+#### 3. Building the project
 
 ```bash
 cd WindowsMusicHotKeyMapper
 cargo build --release
 ```
+
+#### 4. Building Windows MSI Installer (Optional)
+
+```bash
+# Install cargo-wix
+cargo install cargo-wix
+
+# Generate WiX configuration (first time only)
+cargo wix init
+
+# Build MSI installer
+cargo wix
+```
+
+The installer will be created in `target/wix/windows_music_hotkey_mapper-*.msi`
 
 ## Usage
 
@@ -147,15 +178,53 @@ WindowsMusicHotKeyMapper/
 3. Implement the method in `src/media_control/linux.rs`
 4. Add the processing to `src/main.rs`
 
+## CI/CD and Releases
+
+This project uses GitHub Actions for automated building and releases:
+
+### Automatic Builds
+
+Every push to the repository triggers:
+- Windows build (x86_64-pc-windows-msvc)
+- Linux build (x86_64-unknown-linux-gnu)
+- MSI installer creation for Windows
+
+### Creating a Release
+
+To create a new release:
+
+```bash
+# Tag the commit
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+GitHub Actions will automatically:
+1. Build binaries for Windows and Linux
+2. Create MSI installer for Windows
+3. Upload artifacts to the release page
+
+### Runtime Dependencies
+
+**Windows:**
+- No additional runtime dependencies required
+- All libraries are statically linked
+- Works on Windows 10/11 out of the box
+
+**Linux:**
+- Requires `playerctl` for media control: `sudo apt install playerctl`
+- Requires X11 libraries (usually pre-installed)
+- Requires OpenGL support (usually pre-installed)
+
 ## Known issues
 
 - Linux requires the installed `playerctl`
 - The application must have permissions to read global keyboard events
-- On some Linux distributions, you may need to run with administrator rights.
+- On some Linux distributions, you may need to run with administrator rights
 
 ## License
 
-Educational project, free use.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Author
 

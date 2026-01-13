@@ -2,6 +2,13 @@
 name = "windows_music_hotkey_mapper"
 version = "0.1.0"
 edition = "2021"
+authors = ["Alexey Leping <alexeyleping@yandex.ru>"]
+description = "Cross-platform application for binding keyboard keys to media player controls"
+license = "MIT"
+repository = "https://github.com/alexeyleping/WindowsMusicHotkeyMapper"
+homepage = "https://github.com/alexeyleping/WindowsMusicHotkeyMapper"
+keywords = ["hotkey", "media", "keyboard", "music", "player"]
+categories = ["multimedia", "command-line-utilities"]
 
 [dependencies]
 # Для глобального перехвата клавиш на Windows и Linux
@@ -32,3 +39,10 @@ windows = { version = "0.52", features = [
     "Win32_Media",
     "Win32_System_Threading",
 ] }
+
+# WiX installer metadata
+[package.metadata.wix]
+upgrade-guid = "12345678-1234-1234-1234-123456789012"
+path-guid = "87654321-4321-4321-4321-210987654321"
+license = false
+eula = false

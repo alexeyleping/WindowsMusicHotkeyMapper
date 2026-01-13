@@ -1,0 +1,10 @@
+{
+  "hotkeys": {
+    "F7": "Previous",
+    "F8": "PlayPause",
+    "F9": "Next",
+    "F10": "Stop",
+    "F11": "VolumeDown",
+    "F12": "VolumeUp"
+  }
+}

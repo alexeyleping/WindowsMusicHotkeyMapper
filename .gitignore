@@ -1,0 +1,17 @@
+# Rust
+/target/
+
+# IDE
+.idea/
+.vscode/
+.claude/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config files (user-specific)
+config.json

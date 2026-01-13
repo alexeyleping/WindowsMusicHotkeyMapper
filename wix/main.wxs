@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+    <Product
+        Id='*'
+        Name='Windows Music Hotkey Mapper'
+        UpgradeCode='12345678-1234-1234-1234-123456789012'
+        Manufacturer='Music Hotkey Mapper Contributors'
+        Language='1033'
+        Codepage='1252'
+        Version='0.1.0'>
+
+        <Package
+            Id='*'
+            Keywords='Installer'
+            Description='Windows Music Hotkey Mapper Installer'
+            Manufacturer='Music Hotkey Mapper Contributors'
+            InstallerVersion='450'
+            Languages='1033'
+            Compressed='yes'
+            InstallScope='perMachine'
+            SummaryCodepage='1252'
+            Platform='x64' />
+
+        <MajorUpgrade
+            Schedule='afterInstallInitialize'
+            DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.' />
+
+        <Media Id='1' Cabinet='media1.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1' />
+        <Property Id='DiskPrompt' Value='Windows Music Hotkey Mapper Installation' />
+
+        <Directory Id='TARGETDIR' Name='SourceDir'>
+            <Directory Id='ProgramFiles64Folder'>
+                <Directory Id='APPLICATIONFOLDER' Name='MusicHotkeyMapper'>
+                    <Component Id='MainExecutable' Guid='87654321-4321-4321-4321-210987654321' Win64='yes'>
+                        <File
+                            Id='MainExe'
+                            Name='windows_music_hotkey_mapper.exe'
+                            DiskId='1'
+                            Source='target\x86_64-pc-windows-msvc\release\windows_music_hotkey_mapper.exe'
+                            KeyPath='yes' />
+                    </Component>
+                </Directory>
+            </Directory>
+
+            <Directory Id='ProgramMenuFolder'>
+                <Directory Id='ApplicationProgramsFolder' Name='Music Hotkey Mapper'>
+                    <Component Id='ApplicationShortcut' Guid='11111111-1111-1111-1111-111111111111'>
+                        <Shortcut
+                            Id='ApplicationStartMenuShortcut'
+                            Name='Music Hotkey Mapper'
+                            Description='Control media player with custom hotkeys'
+                            Target='[APPLICATIONFOLDER]windows_music_hotkey_mapper.exe'
+                            WorkingDirectory='APPLICATIONFOLDER' />
+                        <RemoveFolder Id='ApplicationProgramsFolder' On='uninstall' />
+                        <RegistryValue
+                            Root='HKCU'
+                            Key='Software\MusicHotkeyMapper'
+                            Name='installed'
+                            Type='integer'
+                            Value='1'
+                            KeyPath='yes' />
+                    </Component>
+                </Directory>
+            </Directory>
+        </Directory>
+
+        <Feature
+            Id='MainApplication'
+            Title='Main Application'
+            Description='The main application.'
+            Level='1'
+            ConfigurableDirectory='APPLICATIONFOLDER'
+            AllowAdvertise='no'
+            Display='expand'
+            Absent='disallow'>
+            <ComponentRef Id='MainExecutable' />
+            <ComponentRef Id='ApplicationShortcut' />
+        </Feature>
+
+        <Icon Id='ProductIcon' SourceFile='target\x86_64-pc-windows-msvc\release\windows_music_hotkey_mapper.exe' />
+        <Property Id='ARPPRODUCTICON' Value='ProductIcon' />
+        <Property Id='ARPHELPLINK' Value='https://github.com/yourusername/WindowsMusicHotkeyMapper' />
+        <UI />
+        <UIRef Id='WixUI_InstallDir' />
+        <Property Id='WIXUI_INSTALLDIR' Value='APPLICATIONFOLDER' />
+        <WixVariable Id='WixUILicenseRtf' Value='wix\License.rtf' />
+    </Product>
+</Wix>

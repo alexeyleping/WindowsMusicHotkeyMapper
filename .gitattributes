@@ -1,0 +1,28 @@
+# Auto detect text files and normalize line endings to LF
+* text=auto
+
+# Rust source files
+*.rs text eol=lf
+*.toml text eol=lf
+
+# Documentation
+*.md text eol=lf
+*.txt text eol=lf
+
+# Windows specific files
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# WiX files (Windows-specific, keep CRLF)
+*.wxs text eol=crlf
+*.rtf binary
+
+# Binary files
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.png binary
+*.jpg binary
+*.ico binary

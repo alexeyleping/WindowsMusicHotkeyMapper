@@ -23,14 +23,17 @@ This application allows you to use any keys on your keyboard to control the medi
 Download the latest release from the [Releases page](https://github.com/yourusername/WindowsMusicHotkeyMapper/releases):
 
 **Windows:**
-- Download `windows_music_hotkey_mapper.msi` (MSI installer)
-- Or download `windows_music_hotkey_mapper.exe` (standalone executable)
-- Run the installer or place the executable in a convenient location
+- Download `windows_music_hotkey_mapper-windows-x64.zip`
+- Extract the ZIP archive
+- Run `windows_music_hotkey_mapper.exe`
+- No installation required - fully portable!
 
 **Linux:**
-- Download `windows_music_hotkey_mapper` (executable)
-- Make it executable: `chmod +x windows_music_hotkey_mapper`
+- Download `windows_music_hotkey_mapper-linux-x64.tar.gz`
+- Extract: `tar -xzf windows_music_hotkey_mapper-linux-x64.tar.gz`
+- Make executable: `chmod +x windows_music_hotkey_mapper`
 - Install playerctl: `sudo apt install playerctl`
+- Run: `./windows_music_hotkey_mapper`
 
 ### Option 2: Build from Source
 
@@ -70,18 +73,21 @@ cargo build --release
 
 #### 4. Building Windows MSI Installer (Optional)
 
+If you want to create a Windows MSI installer:
+
+**Prerequisites:**
+- Install [WiX Toolset v5.0+](https://wixtoolset.org/)
+
+**Build MSI:**
 ```bash
-# Install cargo-wix
-cargo install cargo-wix
+# First, build the release binary
+cargo build --release --target x86_64-pc-windows-msvc
 
-# Generate WiX configuration (first time only)
-cargo wix init
-
-# Build MSI installer
-cargo wix
+# Then build the MSI using WiX
+wix build -arch x64 -out target\wix\windows_music_hotkey_mapper.msi wix\main.wxs
 ```
 
-The installer will be created in `target/wix/windows_music_hotkey_mapper-*.msi`
+The installer will be created in `target/wix/windows_music_hotkey_mapper.msi`
 
 ## Usage
 
@@ -185,9 +191,9 @@ This project uses GitHub Actions for automated building and releases:
 ### Automatic Builds
 
 Every push to the repository triggers:
-- Windows build (x86_64-pc-windows-msvc)
-- Linux build (x86_64-unknown-linux-gnu)
-- MSI installer creation for Windows
+- Windows build (x86_64-pc-windows-msvc) → ZIP archive
+- Linux build (x86_64-unknown-linux-gnu) → tarball archive
+- Fully portable, no installation required
 
 ### Creating a Release
 
@@ -200,9 +206,12 @@ git push origin v0.1.0
 ```
 
 GitHub Actions will automatically:
-1. Build binaries for Windows and Linux
-2. Create MSI installer for Windows
-3. Upload artifacts to the release page
+1. Build optimized binaries for Windows and Linux
+2. Package them with README and LICENSE
+3. Create ZIP (Windows) and tar.gz (Linux) archives
+4. Upload artifacts to the release page
+
+MSI installer can be built locally if needed (see Building section above).
 
 ### Runtime Dependencies
 

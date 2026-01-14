@@ -1,6 +1,6 @@
 [package]
 name = "windows_music_hotkey_mapper"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Alexey Leping <alexeyleping@yandex.ru>"]
 description = "Cross-platform application for binding keyboard keys to media player controls"

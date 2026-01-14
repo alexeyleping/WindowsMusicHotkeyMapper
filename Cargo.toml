@@ -32,10 +32,12 @@ egui = "0.29"
 # Для многопоточности
 crossbeam-channel = "0.5"
 
-# Для Windows API (управление медиа)
+# Для Windows API (управление медиа и горячие клавиши)
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.52", features = [
     "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_Foundation",
     "Win32_Media",
     "Win32_System_Threading",
 ] }

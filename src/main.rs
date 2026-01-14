@@ -1,14 +1,15 @@
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use log::{error, info};
-use rdev::{listen, Event, EventType};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
 mod config;
+mod hotkey_listener;
 mod media_control;
 mod ui;
 
-use config::{Config, MediaAction};
+use config::Config;
+use hotkey_listener::HotkeyListener;
 use media_control::MediaController;
 use ui::{AppMessage, UiMessage};
 
@@ -53,13 +54,13 @@ fn main() {
         // Create media controller
         let media_controller = MediaController::new();
 
-        // Listen to keyboard events
-        if let Err(error) = listen(move |event: Event| {
-            let config = config_for_listener.lock().unwrap();
-            callback(event, &config, &media_controller, &app_sender_for_listener);
-        }) {
-            error!("Error listening to keyboard events: {:?}", error);
-        }
+        // Create and start hotkey listener (platform-specific implementation)
+        let listener = HotkeyListener::new(
+            config_for_listener,
+            media_controller,
+            app_sender_for_listener,
+        );
+        listener.start();
     });
 
     // Start thread for processing messages from UI
@@ -92,35 +93,5 @@ fn main() {
     if let Err(e) = ui::run_ui(config_for_ui, ui_sender, app_receiver) {
         error!("Failed to run UI: {}", e);
         std::process::exit(1);
-    }
-}
-
-fn callback(
-    event: Event,
-    config: &Config,
-    media_controller: &MediaController,
-    app_sender: &Sender<AppMessage>,
-) {
-    match event.event_type {
-        EventType::KeyPress(key) => {
-            // Check if there's an action for this key
-            if let Some(action) = config.hotkeys.get(&key) {
-                info!("Hotkey pressed: {:?} -> {:?}", key, action);
-
-                // Send message to UI
-                let _ = app_sender.send(AppMessage::HotkeyPressed(key, *action));
-
-                // Execute action
-                match action {
-                    MediaAction::PlayPause => media_controller.play_pause(),
-                    MediaAction::Next => media_controller.next(),
-                    MediaAction::Previous => media_controller.previous(),
-                    MediaAction::VolumeUp => media_controller.volume_up(),
-                    MediaAction::VolumeDown => media_controller.volume_down(),
-                    MediaAction::Stop => media_controller.stop(),
-                }
-            }
-        }
-        _ => {}
     }
 }

@@ -25,6 +25,7 @@ Download the latest release from the [Releases page](https://github.com/youruser
 **Windows:**
 - Download `windows_music_hotkey_mapper-windows-x64.zip`
 - Extract the ZIP archive
+- Add a folder to windows Firewall exceptions
 - Run `windows_music_hotkey_mapper.exe`
 - No installation required - fully portable!
 

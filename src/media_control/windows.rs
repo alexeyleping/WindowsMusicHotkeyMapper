@@ -1,16 +1,16 @@
 use log::{info, error};
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    keybd_event, KEYBD_EVENT_FLAGS, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP,
+    SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS,
+    KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP, VIRTUAL_KEY,
 };
 
 // Virtual key codes for media control
-const VK_MEDIA_NEXT_TRACK: u8 = 0xB0;
-const VK_MEDIA_PREV_TRACK: u8 = 0xB1;
-const VK_MEDIA_STOP: u8 = 0xB2;
-const VK_MEDIA_PLAY_PAUSE: u8 = 0xB3;
-const VK_VOLUME_MUTE: u8 = 0xAD;
-const VK_VOLUME_DOWN: u8 = 0xAE;
-const VK_VOLUME_UP: u8 = 0xAF;
+const VK_MEDIA_NEXT_TRACK: u16 = 0xB0;
+const VK_MEDIA_PREV_TRACK: u16 = 0xB1;
+const VK_MEDIA_STOP: u16 = 0xB2;
+const VK_MEDIA_PLAY_PAUSE: u16 = 0xB3;
+const VK_VOLUME_DOWN: u16 = 0xAE;
+const VK_VOLUME_UP: u16 = 0xAF;
 
 pub struct WindowsMediaController;
 
@@ -20,27 +20,45 @@ impl WindowsMediaController {
         WindowsMediaController
     }
 
-    /// Send media key press
-    fn send_media_key(&self, key_code: u8) {
+    /// Send media key press using SendInput (modern replacement for keybd_event)
+    fn send_media_key(&self, key_code: u16) {
         unsafe {
-            // Key press
-            keybd_event(
-                key_code,
-                0,
-                KEYBD_EVENT_FLAGS(KEYEVENTF_EXTENDEDKEY.0),
-                0,
-            );
+            let inputs = [
+                INPUT {
+                    r#type: INPUT_KEYBOARD,
+                    Anonymous: INPUT_0 {
+                        ki: KEYBDINPUT {
+                            wVk: VIRTUAL_KEY(key_code),
+                            wScan: 0,
+                            dwFlags: KEYEVENTF_EXTENDEDKEY,
+                            time: 0,
+                            dwExtraInfo: 0,
+                        },
+                    },
+                },
+                INPUT {
+                    r#type: INPUT_KEYBOARD,
+                    Anonymous: INPUT_0 {
+                        ki: KEYBDINPUT {
+                            wVk: VIRTUAL_KEY(key_code),
+                            wScan: 0,
+                            dwFlags: KEYBD_EVENT_FLAGS(
+                                KEYEVENTF_EXTENDEDKEY.0 | KEYEVENTF_KEYUP.0,
+                            ),
+                            time: 0,
+                            dwExtraInfo: 0,
+                        },
+                    },
+                },
+            ];
 
-            // Key release
-            keybd_event(
-                key_code,
-                0,
-                KEYBD_EVENT_FLAGS(KEYEVENTF_EXTENDEDKEY.0 | KEYEVENTF_KEYUP.0),
-                0,
-            );
+            let sent = SendInput(&inputs, std::mem::size_of::<INPUT>() as i32);
+            if sent != inputs.len() as u32 {
+                error!("SendInput failed for key 0x{:X}: sent {}/{}", key_code, sent, inputs.len());
+            }
         }
 
-        info!("Sent media key: 0x{:X}", key_code);
+        info!("Sent media key via SendInput: 0x{:X}", key_code);
     }
 
     pub fn play_pause(&self) {
@@ -69,9 +87,7 @@ impl WindowsMediaController {
     }
 
     pub fn stop(&self) {
-        info!("Windows: Sending Stop (using Play/Pause to pause)");
-        // Use Play/Pause instead of Stop for better compatibility
-        // Many players (especially browser-based) don't respond to Play after Stop
-        self.send_media_key(VK_MEDIA_PLAY_PAUSE);
+        info!("Windows: Sending Stop");
+        self.send_media_key(VK_MEDIA_STOP);
     }
 }

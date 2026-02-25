@@ -27,6 +27,8 @@ pub struct HotkeyMapperApp {
     last_pressed_info: Option<(Key, MediaAction, f64)>,
     ui_sender: Sender<UiMessage>,
     app_receiver: Receiver<AppMessage>,
+    /// Whether the main window is currently visible
+    window_visible: bool,
 }
 
 impl HotkeyMapperApp {
@@ -42,6 +44,7 @@ impl HotkeyMapperApp {
             last_pressed_info: None,
             ui_sender,
             app_receiver,
+            window_visible: true,
         }
     }
 
@@ -60,12 +63,32 @@ impl HotkeyMapperApp {
             }
         }
     }
+
+    fn hide_window(&mut self, ctx: &egui::Context) {
+        self.window_visible = false;
+        ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
+        info!("Window hidden, application running in background");
+    }
+
+    fn show_window(&mut self, ctx: &egui::Context) {
+        self.window_visible = true;
+        ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
+        ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+        info!("Window shown");
+    }
 }
 
 impl eframe::App for HotkeyMapperApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // Process messages from main thread
         self.process_app_messages(ctx);
+
+        // Intercept window close button — hide instead of exit
+        if ctx.input(|i| i.viewport().close_requested()) {
+            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+            self.hide_window(ctx);
+            return;
+        }
 
         // Main panel
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -167,8 +190,6 @@ impl eframe::App for HotkeyMapperApp {
             // Add new hotkey button
             if ui.button("➕ Add Hotkey").clicked() {
                 info!("Add hotkey button clicked");
-                // Could add dialog for adding new hotkey
-                // For now just add an example
                 if !self.config.hotkeys.contains_key(&Key::F1) {
                     self.config.hotkeys.insert(Key::F1, MediaAction::PlayPause);
                 }
@@ -186,7 +207,6 @@ impl eframe::App for HotkeyMapperApp {
                         log::error!("Failed to save config: {}", e);
                     } else {
                         info!("Configuration saved successfully");
-                        // Send updated configuration to main thread
                         let _ = self.ui_sender.send(UiMessage::SaveConfig(self.config.clone()));
                     }
                 }
@@ -210,6 +230,11 @@ impl eframe::App for HotkeyMapperApp {
                         let _ = self.ui_sender.send(UiMessage::Exit);
                         std::process::exit(0);
                     }
+
+                    if ui.button("📦 Minimize").clicked() {
+                        info!("Minimize to background clicked");
+                        self.hide_window(ctx);
+                    }
                 });
             });
 
@@ -220,7 +245,8 @@ impl eframe::App for HotkeyMapperApp {
                 ui.label(egui::RichText::new("ℹ Instructions:").strong());
                 ui.label("• Configure the desired keys and actions");
                 ui.label("• Click 'Save' to apply changes");
-                ui.label("• The application works in the background and intercepts key presses");
+                ui.label("• Click 'Minimize' or close window (✕) to hide — hotkeys keep working");
+                ui.label("• Use 'Exit' to fully quit the application");
             });
         });
     }
